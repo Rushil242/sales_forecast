@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      RETAILIQ_ENVIRONMENT: production
+      RETAILIQ_LOG_JSON: "true"
+      RETAILIQ_DATA_DIR: /data
+      RETAILIQ_DATABASE_URL: sqlite:////data/retailiq.db
+      RETAILIQ_CHRONOS_DEVICE: cpu
+      # Optional. Everything runs without these; the API reports which
+      # connectors are unavailable and why.
+      RETAILIQ_REDDIT_CLIENT_ID: ${RETAILIQ_REDDIT_CLIENT_ID:-}
+      RETAILIQ_REDDIT_CLIENT_SECRET: ${RETAILIQ_REDDIT_CLIENT_SECRET:-}
+      RETAILIQ_ANTHROPIC_API_KEY: ${RETAILIQ_ANTHROPIC_API_KEY:-}
+    volumes:
+      - ./data:/data
+      # Persist model weights so a restart does not re-download ~700 MB.
+      - model-cache:/models
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  model-cache:

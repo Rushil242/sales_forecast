@@ -1,0 +1,29 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# node
+node_modules/
+dist/
+.vite/
+
+# data: the curated CSV is committed; raw source and derived artefacts are not
+data/raw/
+data/retail_transactions_full.csv
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# local config and secrets
+.env
+.env.local
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/

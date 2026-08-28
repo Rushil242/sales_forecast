@@ -2,20 +2,200 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: 'Manrope', sans-serif;
-  color: #e2e8f0;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-cream-50 text-ink antialiased font-sans selection:bg-blush-200 selection:text-ink-900;
+  }
+  
+  /* Warm-tinted custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-cream-100;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-cream-300 rounded-full hover:bg-cream-400 transition-colors;
+  }
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background-color: #020617;
+@layer components {
+  /* Layout & Containers */
+  .card {
+    @apply bg-white rounded-4xl shadow-card border border-cream-200 p-6;
+  }
+  
+  .card-interactive {
+    /* Explicitly duplicating .card to avoid @apply same-layer issues */
+    @apply bg-white rounded-4xl shadow-card border border-cream-200 p-6 transition-all duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-card-md cursor-pointer;
+  }
+  
+  .panel {
+    @apply bg-cream-100 rounded-5xl p-8 border border-cream-200;
+  }
+  
+  .surface-glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-card;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full font-medium text-white bg-blush-500 hover:bg-blush-600 active:scale-95 transition-all duration-200 shadow-glow focus:outline-none focus:ring-2 focus:ring-blush-400 focus:ring-offset-2 focus:ring-offset-cream-50;
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full font-medium text-ink bg-white border border-cream-300 hover:bg-cream-50 hover:border-cream-400 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ink-300 focus:ring-offset-2 focus:ring-offset-cream-50;
+  }
+  
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full font-medium text-ink-600 hover:text-ink hover:bg-cream-200 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ink-300 focus:ring-offset-2 focus:ring-offset-cream-50;
+  }
+  
+  .btn-soft {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full font-medium text-blush-700 bg-blush-100 hover:bg-blush-200 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blush-400 focus:ring-offset-2 focus:ring-offset-cream-50;
+  }
+
+  /* Forms */
+  .form-input {
+    @apply w-full px-4 py-3 rounded-2xl bg-white border border-cream-300 text-ink placeholder:text-ink-300 focus:outline-none focus:ring-2 focus:ring-blush-400 focus:border-transparent transition-all shadow-xs;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-ink-600 mb-1.5;
+  }
+
+  /* Typography */
+  .section-title {
+    @apply text-2xl font-display font-bold text-ink tracking-tight;
+  }
+  
+  .page-title {
+    @apply text-4xl font-display font-extrabold text-ink tracking-tighter;
+  }
+  
+  .stat-value {
+    @apply text-3xl font-display font-bold text-ink;
+  }
+  
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-wider text-ink-500;
+  }
+  
+  .gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-blush-500 to-tangerine-500 animate-gradient-pan bg-[length:200%_auto];
+  }
+
+  /* Elements */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cream-200 text-ink-700;
+  }
+  
+  .chip {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white border border-cream-200 text-ink-600 shadow-xs hover:border-cream-300 transition-colors;
+  }
+  
+  .stat-pill {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-cream-200 shadow-xs text-sm font-medium;
+  }
+
+  .skeleton {
+    @apply animate-pulse bg-cream-200 rounded-xl;
+  }
+  
+  .rule-fade {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-cream-300 to-transparent;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .divider-soft {
+    @apply h-px w-full bg-cream-200;
+  }
+
+  /* Complex Interactive Tiles */
+  .tile {
+    @apply relative overflow-hidden bg-white rounded-4xl border border-cream-200 p-5 shadow-xs transition-all duration-300 ease-out-expo cursor-pointer;
+  }
+  
+  .tile:hover {
+    @apply -translate-y-1 shadow-card-md border-cream-300;
+  }
+  
+  .tile::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-blush-50/0 to-tangerine-50/0 opacity-0 transition-opacity duration-300 pointer-events-none;
+  }
+  
+  .tile:hover::before {
+    @apply opacity-100 from-blush-50/50 to-tangerine-50/50;
+  }
+  
+  .tile-active {
+    @apply border-blush-400 shadow-glow ring-1 ring-blush-400;
+  }
+  
+  .tile-active::before {
+    @apply opacity-100 from-blush-50 to-cream-50/50;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-card;
+  }
 }
 
-.grid-pattern {
-  background-image:
-    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
-  background-size: 24px 24px;
+@layer utilities {
+  .reveal {
+    @apply opacity-0 translate-y-4 transition-all duration-700 ease-out-expo;
+  }
+  
+  .reveal.is-revealed {
+    @apply opacity-100 translate-y-0;
+  }
+  
+  /* Stagger delays for reveal animation */
+  .reveal-stagger:nth-child(1) { transition-delay: 50ms; }
+  .reveal-stagger:nth-child(2) { transition-delay: 100ms; }
+  .reveal-stagger:nth-child(3) { transition-delay: 150ms; }
+  .reveal-stagger:nth-child(4) { transition-delay: 200ms; }
+  .reveal-stagger:nth-child(5) { transition-delay: 250ms; }
+  .reveal-stagger:nth-child(6) { transition-delay: 300ms; }
+  .reveal-stagger:nth-child(n+7) { transition-delay: 350ms; }
+  
+  .reveal-stagger {
+    @apply opacity-0 translate-y-4 transition-all duration-700 ease-out-expo;
+  }
+  
+  .reveal-stagger.is-revealed {
+    @apply opacity-100 translate-y-0;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

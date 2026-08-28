@@ -1,0 +1,92 @@
+[project]
+name = "retailiq-backend"
+version = "1.0.0"
+description = "RetailIQ - agentic retail demand intelligence: TSFM forecasting fused with social sentiment"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+dependencies = [
+    # web
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+    "python-multipart>=0.0.12",
+    "httpx>=0.27.0",
+    # data
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    "openpyxl>=3.1.0",
+    "requests>=2.32.0",
+    # persistence
+    "sqlalchemy>=2.0.36",
+    # forecasting
+    "statsforecast>=1.7.0",
+    "torch>=2.4.0",
+    "chronos-forecasting>=1.5.0",
+    # social intelligence
+    "transformers>=4.45.0",
+    "feedparser>=6.0.11",
+    "tenacity>=9.0.0",
+    # enrichment / covariates
+    # Offline holiday calendars. Replaces Nager.Date, which returns 204 for India.
+    "holidays>=0.60",
+    "pyarrow>=17.0.0",       # parquet cache for fetched covariates
+    # data connectors
+    # Encrypts stored OAuth tokens at rest. No login on this system does not mean
+    # a Shopify token should sit in the SQLite file as plain text.
+    "cryptography>=42.0.0",
+    # open-web social sources
+    # TLS-fingerprint-impersonating fetcher plus an HTML/JSON parser. Large sites
+    # identify a stock Python client from the handshake, before any header is sent.
+    "scrapling[fetchers]>=0.4",
+    # Phase-2 substrate: our service layer exposed as agent tools.
+    # 2.x renamed FastMCP to MCPServer; app/mcp_server.py uses the new API.
+    "mcp>=2.0",
+]
+
+[project.scripts]
+# Registering the MCP server with a client:
+#   claude mcp add retailiq -- /abs/path/backend/.venv/bin/retailiq-mcp
+retailiq-mcp = "app.mcp_server:main"
+
+[project.optional-dependencies]
+# Optional LLM narrative layer. The system runs fully without it.
+llm = ["anthropic>=0.39.0"]
+# Google Trends connector. Isolated because pytrends breaks against Google's
+# unofficial endpoint from time to time; the agent degrades gracefully without it.
+trends = ["pytrends>=4.9.2"]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.7.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "slow: exercises a real model download or a live network call",
+    "network: requires outbound internet access",
+    "live: measures what a third-party source returns right now",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+ignore = [
+    "B008",    # FastAPI Depends() in argument defaults is the documented idiom
+    "SIM905",  # keeps long word lists as readable multi-line """...""".split()
+]
