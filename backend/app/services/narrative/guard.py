@@ -144,3 +144,30 @@ def check_brief(brief: Any, payload: Any) -> list[str]:
 
     walk(brief)
     return check(" ".join(parts), payload)
+
+
+# Vocabulary that means nothing to a shop owner. The prompts forbid all of it and
+# the model mostly complies -- but "mostly" is not a guarantee, and a measured
+# reply that opens "the forecast has a MASE of 1.184" has failed the reader even
+# though every figure in it is real. Numbers are checked because they can be
+# fabricated; words are checked because they can be incomprehensible.
+JARGON = (
+    "mase", "rmse", "smape", "mape", "quantile", "covariate", "covariates",
+    "confidence interval", "prediction interval", "p-value", "corpus",
+    "seasonal-naive", "seasonal naive", "backtest", "backtesting",
+    "rolling-origin", "heteroscedastic", "autocorrelation", "stationarity",
+    "hyperparameter", "sentiment score", "engagement rate", "n=",
+)
+
+_JARGON_PATTERNS = tuple(
+    (term, re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE))
+    for term in JARGON
+)
+
+
+def check_jargon(text: str) -> list[str]:
+    """Statistics vocabulary the reader was promised they would not have to meet."""
+    found = [term for term, pattern in _JARGON_PATTERNS if pattern.search(text or "")]
+    if found:
+        LOG.warning("Narrative guard flagged jargon: %s", ", ".join(found))
+    return sorted(set(found))

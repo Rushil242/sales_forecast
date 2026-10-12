@@ -142,6 +142,54 @@ export const api = {
   },
 
 
+  chat: (body) => request(`${PREFIX}/chat`, json(body)),
+
+  chatSuggestions: (dataset) =>
+    request(`${PREFIX}/chat/suggestions${dataset ? `?dataset=${encodeURIComponent(dataset)}` : ''}`),
+
+  // Same SSE shape as forecastStream. The assistant's slowest path is a social
+  // harvest that can run past a minute, so falling back to the blocking call on
+  // a stream failure keeps the answer arriving even when progress does not.
+  chatStream: async (body, onStage) => {
+    let response
+    try {
+      response = await fetch(`${PREFIX}/chat/stream`, json(body))
+    } catch {
+      return api.chat(body)
+    }
+    if (!response.ok || !response.body) return api.chat(body)
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+
+      const frames = buffer.split('\n\n')
+      buffer = frames.pop() ?? ''
+      for (const frame of frames) {
+        const line = frame.split('\n').find((l) => l.startsWith('data: '))
+        if (!line) continue
+        let message
+        try { message = JSON.parse(line.slice(6)) } catch { continue }
+
+        if (message.type === 'stage') onStage?.(message)
+        else if (message.type === 'done') return message.result
+        else if (message.type === 'error') {
+          throw new ApiError(message.error?.message ?? 'The assistant failed.', {
+            code: message.error?.code, details: message.error?.details,
+          })
+        }
+      }
+    }
+    throw new ApiError('The assistant stream ended without a result.', {
+      code: 'stream_incomplete',
+    })
+  },
+
   social: ({ query, lookbackDays = 30, refresh = false }) => {
     const params = new URLSearchParams({
       query,

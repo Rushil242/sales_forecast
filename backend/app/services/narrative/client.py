@@ -22,6 +22,7 @@ import json
 import logging
 import time
 from functools import lru_cache
+from typing import Any
 
 from app.config import get_settings
 from app.services.narrative import guard
@@ -334,3 +335,92 @@ def generate_social_brief(payload: dict) -> SocialBriefEnvelope | None:
     return SocialBriefEnvelope(
         brief=brief, source="llm", model=settings.gemini_model, generated_ms=elapsed,
     )
+
+
+CHAT_PROMPT = """You are the assistant inside RetailIQ, a demand-forecasting tool \
+used by shop owners and inventory buyers. You answer their questions about their own \
+sales, forecasts, and what the public is saying about their products.
+
+You are given a QUESTION and a FACTS object. The facts were produced by running real \
+tools over real data a moment ago. They are all you know.
+
+Rules, in order of importance:
+
+1. NEVER state a number that is not in the facts. Not an estimate, not a rounder \
+version, not a total you worked out yourself. If you want to say something you have \
+no number for, say it qualitatively. Every figure you write is checked against the \
+facts before the user sees it, and a single unsupported one discards your whole reply.
+2. Answer the question that was asked, first, in the first sentence. Context comes \
+after, not before.
+3. No statistics vocabulary. Never write MASE, RMSE, sMAPE, quantile, covariate, \
+confidence interval, corpus, or n=. Say "how accurate this has been", "the likely \
+range", "what we checked and kept".
+4. Two to five sentences. This is a chat reply, not a report. The numbers are already \
+displayed beside your text, so do not list them all back.
+5. If the facts contain `refusal`, that is the answer -- explain it plainly and do \
+not work around it. A product without enough history cannot be forecast, and saying \
+so is correct behaviour, not a failure to apologise for.
+6. If `product_confidence` is below 0.8, open by naming the product you answered \
+about, so a wrong guess is visible immediately.
+7. For anything social, `provenance` says whether the data was harvested just now, \
+reused from a recent harvest, or replayed from a recording. Say which. Never \
+describe search interest as approval -- it measures how many people looked.
+8. Where the facts say a signal was tested and kept or rejected, that is worth one \
+clause: it is the difference between a measured claim and an assumed one.
+9. Format numbers the way a person writes them: thousands separators (5,720 not \
+5720), at most one decimal place, and "%" not the word "percent".
+10. Suggest at most three follow-ups, each one this tool can actually answer: a \
+forecast, a sales comparison, a social check, or a list of what data exists."""
+
+
+def generate_chat_answer(question: str, facts: dict) -> tuple[Any, list[str]] | None:
+    """Phrase one assistant turn from measured facts.
+
+    Returns ``(reply, guard_flags)``, or ``None`` when the caller should fall back
+    to the deterministic composer. A non-empty ``guard_flags`` means the model
+    wrote a figure the facts do not support and its reply must be discarded --
+    the same rule the forecast and social briefs already run under.
+    """
+    if not is_available():
+        return None
+
+    from app.services.narrative.schemas import ChatReply
+
+    settings = get_settings()
+    try:
+        from google.genai import types
+
+        response = _client().models.generate_content(
+            model=settings.gemini_model,
+            contents=(
+                f"QUESTION:\n{question}\n\nFACTS:\n"
+                + json.dumps(facts, indent=2, default=str)
+            ),
+            config=types.GenerateContentConfig(
+                system_instruction=CHAT_PROMPT,
+                response_mime_type="application/json",
+                response_schema=ChatReply,
+                max_output_tokens=settings.gemini_max_tokens,
+                temperature=0.3,
+            ),
+        )
+    except Exception as exc:
+        LOG.warning("Gemini chat answer failed (%s); composing from facts instead", exc)
+        _record_failure(exc)
+        return None
+
+    reply = getattr(response, "parsed", None)
+    if reply is None:
+        try:
+            reply = ChatReply.model_validate_json(response.text)
+        except Exception as exc:
+            LOG.warning("Gemini returned unparsable chat JSON (%s)", exc)
+            return None
+
+    # Both guards, and both fatal. An unsupported number is a fabrication; a
+    # sentence built on "MASE" is unreadable to the person who asked. Either one
+    # sends the turn to the deterministic composer, which can do neither.
+    flags = guard.check(reply.answer, facts)
+    flags += [f"jargon:{term}" for term in guard.check_jargon(reply.answer)]
+    _record_success()
+    return reply, flags

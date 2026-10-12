@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app import __version__
-from app.api.routes import connectors, forecast, health, social
+from app.api.routes import chat, connectors, forecast, health, social
 from app.config import get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging_config import configure_logging, new_request_id, request_id_var
@@ -109,6 +109,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, tags=["health"])
     app.include_router(forecast.router, prefix=settings.api_prefix, tags=["forecast"])
     app.include_router(social.router, prefix=settings.api_prefix, tags=["social"])
+    app.include_router(chat.router, prefix=settings.api_prefix, tags=["assistant"])
     app.include_router(connectors.router, prefix=settings.api_prefix, tags=["connectors"])
 
     return app

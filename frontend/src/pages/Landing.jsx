@@ -33,39 +33,40 @@ const featureCards = [
   { no: '04', title: 'One service layer, three interfaces', body: 'The FastAPI application, the React workspace and a seven-tool MCP server call the same business layer. Refusals survive every path—including the agent path.', tag: 'FastAPI + MCP' },
 ]
 
-function FutureAgents() {
+function FutureAgents({ onOpenWorkspace }) {
   const [prompt, setPrompt] = useState('How did men’s T-shirt sales perform last summer?')
   const historic = /sales|summer|last|revenue|order/i.test(prompt) && !/trend|social|talking|buzz/i.test(prompt)
   return (
     <section id="future" className="ri-future ri-section">
-      <div className="ri-section-kicker"><span>COMING NEXT MONTH</span><em>Phase 2 / agentic interface</em></div>
+      <div className="ri-section-kicker"><span>NOW SHIPPING</span><em>Phase 2 / agentic interface</em></div>
       <div className="ri-future-head">
         <h2>A question becomes<br /><i>the right route.</i></h2>
-        <p>Instead of another general chatbot, RetailIQ will route a business question to the smallest agent that can answer it—and show the evidence it used.</p>
+        <p>Instead of another general chatbot, RetailIQ routes a business question to the smallest agent that can answer it—and shows the evidence it used.</p>
       </div>
       <div className="ri-agent-stage">
         <div className="ri-agent-copy">
-          <span className="ri-chip">Preview concept</span>
+          <span className="ri-chip">Live in the workspace</span>
           <h3>Ask the business<br />in plain language.</h3>
-          <p>The orchestrator classifies intent, selects a tool path, then returns an answer with its source—historical sales, forecast runs, or a live social harvest.</p>
+          <p>The orchestrator classifies intent, selects a tool path, then returns an answer with its source—historical sales, a forecast run with its accuracy attached, or a live social harvest. Routing is lexical rather than model-driven, so a turn costs no model call before the tools have run and the assistant still answers when the daily quota is spent.</p>
           <div className="ri-agent-legend"><span><b className="ri-dot ri-dot-lime" /> Historical data</span><span><b className="ri-dot ri-dot-coral" /> Live social data</span></div>
         </div>
         <div className="ri-chat-shell">
-          <div className="ri-chat-top"><span><b /> RetailIQ assistant</span><small>prototype</small></div>
+          <div className="ri-chat-top"><span><b /> RetailIQ assistant</span><small>live</small></div>
           <div className="ri-chat-body">
             <div className="ri-user-message">{prompt}</div>
-            <div className="ri-route-line"><span>Intent router</span><i /> <strong>{historic ? 'Historical demand RAG' : 'Social signal agent'}</strong></div>
+            <div className="ri-route-line"><span>Intent router</span><i /> <strong>{historic ? 'Sales agent' : 'Social signal agent'}</strong></div>
             <div className="ri-agent-nodes">
-              <div className={historic ? 'active history' : 'history'}><b>H</b><span>Historic RAG<small>sales + invoices</small></span></div>
+              <div className={historic ? 'active history' : 'history'}><b>H</b><span>Sales agent<small>computed on the table</small></span></div>
               <div className={!historic ? 'active social' : 'social'}><b>S</b><span>Social agent<small>nine live sources</small></span></div>
               <div><b>F</b><span>Forecast agent<small>model runs</small></span></div>
             </div>
-            <div className="ri-answer"><span>Answer preview</span>{historic ? 'Sales moved through the historical series, then retrieval grounds the answer in the relevant summer period.' : 'A live collection checks discussion volume, sentiment and rising terms before the answer is written.'}</div>
+            <div className="ri-answer"><span>Answer preview</span>{historic ? 'The sales agent computes the comparison directly over the transaction table, then the answer is written from those figures alone.' : 'A live collection checks discussion volume, sentiment and rising terms before the answer is written.'}</div>
           </div>
           <label className="ri-chat-input"><input value={prompt} onChange={(event) => setPrompt(event.target.value)} aria-label="Try a future RetailIQ question" /><button aria-label="Send question"><Arrow /></button></label>
         </div>
       </div>
-      <p className="ri-future-note">Planned scope: intent router + RAG over historic sales and saved runs + the existing MCP tools. It is presented here as the next milestone, not as a feature already shipping.</p>
+      <p className="ri-future-note">Shipping now: the intent router, four sub-agents (forecast, sales, social, catalogue) over the same service layer as the MCP tools, and a streamed trace of every tool call. Every figure written by the model is checked against the tool results before display, and a product with too little history is refused here exactly as it is everywhere else. Deliberately <em>not</em> built: embedding retrieval over saved runs—a transaction table is not a corpus, and the comparison an embedding search would approximate is one a groupby computes exactly.</p>
+      <div className="ri-hero-actions ri-future-actions"><button className="ri-cta-main" onClick={onOpenWorkspace}>Try it in the workspace <Arrow /></button></div>
     </section>
   )
 }
@@ -138,7 +139,7 @@ export default function Landing({ onOpenWorkspace }) {
           <p className="ri-proof-caveat">A separate Indian apparel catalogue is included for interface demonstrations and is explicitly simulated. It is never used for the real-data accuracy claim above.</p>
         </section>
 
-        <FutureAgents />
+        <FutureAgents onOpenWorkspace={onOpenWorkspace} />
       </main>
 
       <footer className="ri-footer"><div><a className="ri-brand" href="#top"><Mark /><span>RETAIL<span>IQ</span></span></a><p>Retail demand intelligence with an auditable point of view.</p></div><div><span>Final-year major project</span><span>BMS Institute of Technology & Management · VTU</span><span>2026</span></div><button onClick={onOpenWorkspace}>Open workspace <Arrow /></button></footer>

@@ -106,3 +106,20 @@ class SocialBriefEnvelope(BaseModel):
     generated_ms: int = 0
     guard_flags: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+
+
+class ChatReply(BaseModel):
+    """One conversational answer, kept to the shape the assistant UI renders.
+
+    ``answer`` is short on purpose. A chat reply that runs to eight paragraphs is
+    read as a wall and skimmed; the structured facts are already on screen beside
+    it, so the prose only has to carry the judgement.
+    """
+
+    answer: str = Field(
+        description="Two to five sentences answering the question directly"
+    )
+    follow_ups: list[str] = Field(
+        default_factory=list,
+        description="Up to three natural next questions, each answerable by this tool",
+    )

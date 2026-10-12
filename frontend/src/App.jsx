@@ -4,6 +4,7 @@ import { Icon } from './components/ui'
 import { api } from './lib/api'
 import Connect from './pages/Connect'
 import Dashboard from './pages/Dashboard'
+import Assistant from './pages/Assistant'
 import Landing from './pages/Landing'
 import SocialIntelligence from './pages/SocialIntelligence'
 
@@ -59,6 +60,7 @@ function WorkspaceApp() {
     {
       label: 'Analyse',
       items: [
+        { id: 'assistant', label: 'Ask RetailIQ', icon: 'Sparkles', pageId: 'assistant' },
         { id: 'dashboard', label: 'Forecast', icon: 'Chart', pageId: 'dashboard' },
         { id: 'social', label: 'Social signal', icon: 'Share', pageId: 'social' }
       ]
@@ -239,6 +241,9 @@ function WorkspaceApp() {
         </header>
 
         <main className="flex-1 overflow-y-auto relative no-scrollbar">
+           {page === 'assistant' ? (
+             <Assistant datasets={datasets} onOpenForecast={() => setPage('dashboard')} />
+           ) : (
            <div className="max-w-7xl mx-auto p-4 md:p-8 min-h-full flex flex-col">
               
               <div className={page === 'dashboard' ? '' : 'hidden'}>
@@ -269,7 +274,9 @@ function WorkspaceApp() {
               )}
 
            </div>
-           
+           )}
+
+           {page !== 'assistant' && (
            <footer className="mt-auto px-4 md:px-8 py-5 border-t border-ink-200/50 bg-surface-0/30">
              <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink-500">
                <div className="flex items-center gap-2 font-medium text-ink-600">
@@ -283,6 +290,7 @@ function WorkspaceApp() {
                </div>
              </div>
            </footer>
+           )}
         </main>
       </div>
     </div>
